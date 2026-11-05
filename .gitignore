@@ -1,0 +1,25 @@
+# Personal financial data: never commit
+data/
+*.xlsx
+*.xls
+*.csv
+*.ods
+vault.meta
+.env
+
+# Maintainer-only helper (it deletes .git, so it must not ship)
+setup-github.bat
+
+# Python
+venv/
+.venv/
+__pycache__/
+*.py[cod]
+*.tmp
+*.log
+
+# Editors and OS
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db

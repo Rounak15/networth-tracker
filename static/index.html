@@ -1,0 +1,311 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Net worth</title>
+<link rel="icon" type="image/svg+xml" href="/favicon.svg">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif:wght@400;500&family=Outfit:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#f5f3ea;--card:#fff;--line:#e6e3d6;--text:#1d1d1b;--mute:#66695f;--acc:#2f7d5a;--onacc:#fff;--gain:#1f6b49;--loss:#a82a4a;--side:#2b2b2b;--c1:#c5cfb7;--c1t:#1b2418;--c2:#f6d88a;--c2t:#2f2506;--c3:#a9a6f2;--c3t:#14123a;color-scheme:light}
+:root[data-theme=dark]{--bg:#141414;--card:#1e1e1d;--line:#2d2d2b;--text:#f0efe9;--mute:#a0a097;--acc:#50a67e;--onacc:#0b1a12;--gain:#6fcf9f;--loss:#ff7f9b;--side:#0d0d0d;--c1:#2f3d2c;--c1t:#e4efdc;--c2:#4a3d12;--c2t:#fbe9b0;--c3:#2f2d63;--c3t:#e2e0ff;color-scheme:dark}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font:400 15px/1.5 Outfit,system-ui,sans-serif}
+button{font:inherit;cursor:pointer;color:var(--text)}
+button:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid var(--acc);outline-offset:2px}
+.shell{display:grid;grid-template-columns:232px minmax(0,1fr);min-height:100vh}
+.side{background:var(--side);padding:28px 0;display:flex;flex-direction:column;position:sticky;top:0;height:100vh}
+.logo{padding:0 24px 28px;color:#fff;font-size:20px;font-weight:600;display:flex;align-items:center;gap:10px}
+.logo i{width:26px;height:26px;border-radius:8px;background:#50a67e;display:block}
+#nav button{display:flex;align-items:center;gap:14px;width:100%;padding:11px 24px;background:none;border:0;border-left:3px solid transparent;color:#d6d4cb;text-align:left}
+#nav button:hover{color:#fff}
+#nav button.on{color:#fff;border-left-color:#e3ae33;background:#ffffff14}
+#nav svg{width:18px;height:18px;flex:none}
+.thm{margin-top:auto;padding:0 24px;display:flex;gap:8px}
+.thm button{flex:1;border:1px solid #555;background:none;color:#d6d4cb;border-radius:999px;padding:7px 0;font-size:13px}
+.thm button.on{background:#f5f3ea;color:#1d1d1b;border-color:#f5f3ea}
+.main{padding:28px 32px;min-width:0}
+.top{display:flex;justify-content:space-between;align-items:center;gap:16px;flex-wrap:wrap;margin-bottom:20px}
+.top h1{margin:0;font-size:22px;font-weight:500}
+.eye{height:44px;border:1px solid var(--line);background:var(--card);border-radius:999px;padding:0 18px;display:flex;align-items:center;gap:8px;font-size:14px}
+.eye svg{width:20px;height:20px}
+.dgrid{display:grid;grid-template-columns:minmax(0,1fr) 300px;gap:20px}
+.dmain>*+*,.dside>*+*{margin-top:14px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:24px;padding:24px}
+.card h2{margin:0 0 14px;font-size:16px;font-weight:500;color:var(--mute)}
+.serif{font-family:'Noto Serif',Georgia,serif}
+.hero{text-align:center;padding:28px}
+.big{font-size:56px;line-height:1.15;letter-spacing:-1px;margin:6px 0 10px}
+.pill{display:inline-block;border-radius:999px;padding:5px 14px;font-size:14px;font-weight:500;background:var(--bg)}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:14px}
+.stat{border-radius:26px;padding:22px;font-size:14px}
+.stat .serif{font-size:28px;margin:4px 0;line-height:1.2}
+.s1{background:var(--c1);color:var(--c1t)}.s2{background:var(--c2);color:var(--c2t)}.s3{background:var(--c3);color:var(--c3t)}
+.mute{color:var(--mute)}.gain{color:var(--gain)}.loss{color:var(--loss)}
+.row{display:flex;align-items:center;gap:10px;padding:9px 0}
+.dot{width:10px;height:10px;border-radius:50%;flex:none}
+.row .v{margin-left:auto;text-align:right}
+table{width:100%;border-collapse:collapse}
+th{font-weight:400;color:var(--mute);text-align:left;padding:8px 10px;border-bottom:1px solid var(--line)}
+td{padding:11px 10px;border-bottom:1px solid var(--line)}
+td.n,th.n{text-align:right}
+.tools{display:flex;gap:10px;margin-bottom:14px;align-items:center;flex-wrap:wrap}
+.sp{flex:1}
+input,select{font:inherit;background:var(--bg);color:var(--text);border:1px solid var(--line);border-radius:12px;padding:8px 12px;width:100%}
+.tools select{width:auto}
+.btn{border:1px solid var(--line);background:var(--card);border-radius:999px;padding:7px 16px}
+.btn.pri{background:var(--acc);color:var(--onacc);border-color:var(--acc);font-weight:500}
+dialog{background:var(--card);color:var(--text);border:1px solid var(--line);border-radius:24px;padding:24px;width:min(460px,94vw)}
+dialog::backdrop{background:#0008}
+.f{display:grid;grid-template-columns:1fr 1fr;gap:12px}.f label{font-size:13px;color:var(--mute);display:block}.f .w{grid-column:1/-1}
+.drop{border:1.5px dashed var(--line);border-radius:20px;padding:32px;text-align:center}
+.tag{font-size:12px;padding:2px 10px;border-radius:999px;background:var(--bg)}
+.tag.new{background:var(--acc);color:var(--onacc)}
+.views{display:flex;gap:6px;margin:0 0 14px;flex-wrap:wrap}
+.views button{border:1px solid var(--line);background:none;border-radius:999px;padding:4px 12px;font-size:13px;color:var(--mute)}
+.views button.on{background:var(--acc);color:var(--onacc);border-color:var(--acc)}
+.alloc{display:flex;gap:16px;align-items:center;flex-wrap:wrap;justify-content:center}
+.sb{background:none;border:0;padding:0;color:inherit;font:inherit;cursor:pointer}.sb:hover{color:var(--text)}
+.out{display:flex;align-items:center;gap:14px;margin:12px 0 0;padding:11px 24px;background:none;border:0;color:#d6d4cb;text-align:left}
+.out:hover{color:#fff}.out svg{width:18px;height:18px}
+#lock{position:fixed;inset:0;background:var(--bg);z-index:50;display:grid;place-items:center;padding:20px}#lock.hide{display:none}
+#lkc{width:min(380px,100%)}#lkc input{margin:6px 0}
+.hide{display:none}
+.toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:var(--acc);color:var(--onacc);padding:10px 20px;border-radius:999px}
+@media(max-width:1000px){.dgrid{grid-template-columns:1fr}}
+@media(max-width:860px){.out{margin:0;padding:8px 14px}.shell{grid-template-columns:1fr}.side{position:static;height:auto;flex-direction:row;align-items:center;overflow-x:auto;padding:10px}.logo{display:none}#nav{display:flex}#nav button{width:auto;border-left:0;border-radius:999px;padding:8px 14px;white-space:nowrap}.thm{margin:0 0 0 auto;padding:0}.main{padding:18px}.big{font-size:40px}}
+</style>
+</head>
+<body>
+<div id="lock"><div class="card" id="lkc"></div></div>
+<div class="shell">
+<aside class="side"><div class="logo"><i></i>Net worth</div><nav id="nav" aria-label="Main"><button data-v="dash" class=on><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><rect x="3" y="3" width="7" height="9" rx="2"/><rect x="14" y="3" width="7" height="5" rx="2"/><rect x="14" y="12" width="7" height="9" rx="2"/><rect x="3" y="16" width="7" height="5" rx="2"/></svg>Dashboard</button><button data-v="hold"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h10"/></svg>Holdings</button><button data-v="ana"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M4 20V10M10 20V4M16 20v-8M22 20H2"/></svg>Analytics</button><button data-v="hist"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>History</button><button data-v="imp"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M12 3v12M7 10l5 5 5-5M4 20h16"/></svg>Import</button><button data-v="set"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/></svg>Settings</button></nav>
+<div class="thm"><button id="th-light">Light</button><button id="th-dark">Dark</button></div>
+<button class="out" id="out"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M12 3v9M6.4 6.6a8 8 0 1 0 11.2 0"/></svg>Log out</button></aside>
+<div class="main"><div class="top"><h1 id="ttl">Dashboard</h1><button class="eye" id="eye" aria-pressed="false"></button></div>
+  <section id="dash"></section>
+  <section id="hold" class="hide">
+    <div class="tools"><select id="flt" aria-label="Filter by type"></select><select id="srt" aria-label="Sort holdings"></select><span class="sp"></span><button class="btn pri" onclick="edit()">Add holding</button></div>
+    <div class="card" style="overflow-x:auto"><table id="tbl"></table></div>
+  </section>
+  <section id="imp" class="hide">
+    <div class="card" style="margin-bottom:14px"><h2>What you can import</h2>
+      <div class="row" style="align-items:flex-start"><span class="tag new">Built in</span><div><b>Zerodha Console holdings</b> (.xlsx)<div class="mute">The Equity and Mutual Funds sheets. Stocks, ETFs, gold bonds and funds are recognised automatically. The Combined sheet is skipped so nothing is counted twice.</div></div></div>
+      <div class="row" style="align-items:flex-start"><span class="tag new">Built in</span><div><b>ICICI Bank FD summary</b> (.xlsx)<div class="mute">Each deposit with its balance, accrued interest, rate and maturity date.</div></div></div>
+      <div class="row" style="align-items:flex-start"><span class="tag new">Built in</span><div><b>SBI Mutual Fund account summary</b> (.ods or .xlsx)<div class="mute">The statement of account: units, NAV and cost of investment for each scheme, matched by folio and ISIN.</div></div></div>
+      <div class="row" style="align-items:flex-start"><span class="tag">Any sheet</span><div><b>Other spreadsheets</b> (.xlsx, .xls, .ods or .csv)<div class="mute">Needs a header row with columns such as Name (or Symbol), ISIN, Quantity, Average Price, Price (or NAV), Current Value, Invested and Type. Type can be stock, ETF, mutual fund, fixed deposit or savings. Title lines above the header are fine. Without a Type column, ISINs starting INE are treated as stocks and INF as mutual funds.</div></div></div>
+      <p class="mute" style="margin:10px 0 0;font-size:13px">You see a preview before anything is saved. Duplicates are rejected: importing again updates existing holdings (matched by folio, ISIN or FD number), skips rows that haven't changed, and holdings missing from the file are only removed if you tick them. The file itself is not stored.</p>
+    </div>
+    <div class="card">
+      <div class="drop"><p>Choose a file to import (.xlsx, .xls, .ods or .csv)</p><input type="file" id="file" accept=".xlsx,.xls,.ods,.csv" style="max-width:340px"></div>
+      <div id="prev"></div>
+    </div>
+  </section>
+  <section id="ana" class="hide"><div class="card"><h2>Analytics</h2><p>This is where returns (XIRR), rebalancing against a target allocation and concentration alerts will go.</p></div></section>
+  <section id="hist" class="hide"></section>
+  <section id="set" class="hide"><div class="card"><h2>Settings</h2><p>Theme: use the Light / Dark buttons in the sidebar.</p><p>Amounts start hidden each time you open the app in a new tab or window. The eye button at the top shows them for the rest of that session.</p><p class="mute">Your data lives in the <code>data</code> folder next to <code>app.py</code>: <code>assets.json</code>, <code>snapshots.json</code> and dated backups.</p></div></section>
+</div></div>
+<dialog id="dlg">
+  <h2 id="dt" style="margin-top:0;font-weight:500">Holding</h2>
+  <div class="f">
+    <div class="w"><label>Name</label><input id="f_name"></div>
+    <div><label>Type</label><select id="f_type"></select></div>
+    <div><label>ISIN (optional)</label><input id="f_isin"></div>
+    <div class="w"><label>Asset class</label><select id="f_asset_class"></select></div>
+    <div class="m"><label>Quantity</label><input id="f_quantity" type="number" step="any"></div>
+    <div class="m"><label>Average price</label><input id="f_avg_price" type="number" step="any"></div>
+    <div class="m w"><label>Current price</label><input id="f_price" type="number" step="any"></div>
+    <div class="o fd"><label>Value</label><select id="f_value_mode"><option value="auto">Auto-calculate</option><option value="manual">Enter manually</option></select></div>
+    <div class="o fd"><label>Compounding</label><select id="f_compounding"><option value="quarterly">Quarterly</option><option value="monthly">Monthly</option><option value="half_yearly">Half-yearly</option><option value="yearly">Yearly</option><option value="simple">Simple (at maturity)</option></select></div>
+    <div class="o"><label>Amount invested / principal</label><input id="f_invested" type="number" step="any"></div>
+    <div class="o"><label>Interest rate % p.a.</label><input id="f_rate" type="number" step="any"></div>
+    <div class="o fd"><label>Start date</label><input id="f_start" type="date"></div>
+    <div class="o"><label>Maturity date (optional)</label><input id="f_maturity" type="date"></div>
+    <div class="o cv w"><label>Current value</label><input id="f_current_value" type="number" step="any"></div>
+  </div>
+  <div style="display:flex;gap:10px;margin-top:20px;justify-content:flex-end">
+    <button class="btn" onclick="dlg.close()">Cancel</button><button class="btn pri" onclick="save()">Save holding</button>
+  </div>
+</dialog>
+<script>
+let SHOW=false;try{SHOW=sessionStorage.getItem("show")==="1"}catch{}
+const T={stock:"Stocks",etf:"ETFs",sgb:"Gold bonds",mutual_fund:"Mutual funds",fixed_deposit:"Fixed deposits",savings:"Savings",other:"Other"};
+const C={stock:"#c8f551",etf:"#38bdf8",sgb:"#f472b6",mutual_fund:"#5eead4",fixed_deposit:"#fbbf24",savings:"#a78bfa",other:"#94a3b8"};
+const $=s=>document.querySelector(s), inr=n=>SHOW?(n<0?"−":"")+"₹"+Math.round(Math.abs(n)).toLocaleString("en-IN"):"₹ ••••";
+const esc=s=>String(s??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const cls=n=>n>=0?"gain":"loss", pct=(a,b)=>b?((a-b)/b*100).toFixed(1)+"%":"";
+const AC={equity:"Equity",debt:"Debt",gold:"Gold",cash:"Cash",other:"Other"};
+const ACC={Equity:"#50a67e",Debt:"#a9a6f2",Gold:"#e3ae33",Cash:"#575e5b",Other:"#94a3b8"};
+const PAL=["#50a67e","#a9a6f2","#e3ae33","#575e5b","#38bdf8","#f472b6","#fb923c","#94a3b8"];
+let VIEW="class";function setView(v){VIEW=v;dash()}
+let H=[],A=[],P=[],M=[],W=false,D=0,editId=null;
+async function api(u,o){const r=await fetch(u,o);if(r.status===401){boot();throw new Error("The app is locked.")}if(!r.ok){let m=r.statusText;try{m=(await r.json()).detail||m}catch{}throw new Error(m)}return r.json()}
+function toast(m){const t=document.createElement("div");t.className="toast";t.textContent=m;document.body.append(t);setTimeout(()=>t.remove(),2500)}
+
+// theme: follows the OS until you choose one
+function setTheme(t){document.documentElement.dataset.theme=t;try{localStorage.setItem("theme",t)}catch{}["light","dark"].forEach(x=>$("#th-"+x).classList.toggle("on",x===t))}
+let th=null;try{th=localStorage.getItem("theme")}catch{}
+setTheme(th||(matchMedia("(prefers-color-scheme:dark)").matches?"dark":"light"));
+$("#th-light").onclick=()=>setTheme("light");$("#th-dark").onclick=()=>setTheme("dark");
+
+const TT={dash:"Dashboard",hold:"Holdings",ana:"Analytics",hist:"History",imp:"Import",set:"Settings"};
+const SLUG={dash:"dashboard",hold:"holdings",ana:"analytics",hist:"history",imp:"import",set:"settings"};
+function show(v,push=true){
+  document.querySelectorAll("#nav button").forEach(x=>x.classList.toggle("on",x.dataset.v===v));
+  Object.keys(TT).forEach(k=>$("#"+k).classList.toggle("hide",k!==v));$("#ttl").textContent=TT[v];document.title=TT[v]+" · Net worth";
+  if(push&&location.pathname!=="/"+SLUG[v])history.pushState({v},"","/"+SLUG[v]);
+}
+const fromPath=()=>Object.keys(SLUG).find(k=>"/"+SLUG[k]===location.pathname)||"dash";
+document.querySelectorAll("#nav button").forEach(b=>b.onclick=()=>show(b.dataset.v));
+addEventListener("popstate",()=>show(fromPath(),false));
+show(fromPath(),false);
+const EYE='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg>';
+const EYEOFF='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M3 3l18 18M10.6 5.2A10 10 0 0 1 12 5c6.4 0 10 7 10 7a17 17 0 0 1-3.2 4M6.5 6.7C3.7 8.5 2 12 2 12s3.6 7 10 7c1.6 0 3-.4 4.3-1M9.9 9.9a3 3 0 0 0 4.2 4.2"/></svg>';
+function eye(){const b=$("#eye");b.setAttribute("aria-pressed",SHOW);b.innerHTML=(SHOW?EYE:EYEOFF)+`<span>${SHOW?"Hide amounts":"Show amounts"}</span>`}
+$("#eye").onclick=()=>{SHOW=!SHOW;try{sessionStorage.setItem("show",SHOW?"1":"0")}catch{}eye();dash();table();hist()};
+eye();
+async function refresh(){A=await api("/api/assets");H=await api("/api/history");dash();table();hist()}
+function dash(){
+  const tot=A.reduce((s,a)=>s+a.current_value,0), inv=A.filter(a=>a.invested);
+  const iv=inv.reduce((s,a)=>s+a.invested,0), cv=inv.reduce((s,a)=>s+a.current_value,0);
+  const top=[...A].sort((a,b)=>b.current_value-a.current_value).slice(0,5);
+  const fds=A.filter(a=>a.type==="fixed_deposit"&&a.maturity&&!a.matured).sort((a,b)=>a.maturity.localeCompare(b.maturity));
+  if(!A.length){$("#dash").innerHTML=`<div class="card"><h2>Nothing here yet</h2><p>Add a holding by hand or import an Excel file to see your net worth.</p><button class="btn pri" onclick="go('hold');edit()">Add holding</button> <button class="btn" onclick="go('imp')">Import Excel</button></div>`;return}
+  const p=H.length>1?H[H.length-2]:null, d=p?tot-p.total:0, f=fds[0];
+  const pill=p?`<span class="pill ${cls(d)}">${d>=0?"+":""}${pct(tot,p.total)} vs ${mname(p)}</span>`:`<span class="pill mute">History starts this month</span>`;
+  $("#dash").innerHTML=`<div class="dgrid"><div class="dmain">
+  <section class="card hero"><div class="mute">Total net worth</div><div class="serif big">${inr(tot)}</div>${pill}</section>
+  <div class="stats">
+   <div class="stat s1"><div>Invested</div><div class="serif">${inr(iv)}</div></div>
+   <div class="stat s2"><div>Unrealised gain</div><div class="serif">${iv?(cv-iv>=0?"+":"")+inr(cv-iv):"–"}</div><div>${iv?(cv-iv>=0?"+":"")+pct(cv,iv)+" on invested":"No invested amounts yet"}</div></div>
+   <div class="stat s3"><div>Next FD maturity</div><div class="serif">${f?inr(f.maturity_value||f.current_value):"–"}</div><div>${f?esc(f.name)+" · "+esc(f.maturity):"No upcoming FDs"}</div></div>
+  </div>
+  ${histCard()}
+  <section class="card"><h2>Largest holdings</h2><table><tr><th>Name<th>Class<th class="n">Value<th class="n">Gain</tr>${top.map(a=>`<tr><td>${esc(a.name)}<td class="mute">${AC[a.asset_class]||""}<td class="n">${inr(a.current_value)}<td class="n ${cls(a.current_value-a.invested)}">${a.invested?(a.current_value>=a.invested?"+":"")+pct(a.current_value,a.invested):""}</tr>`).join("")}</table></section>
+  </div><aside class="dside"><div class="card"><h2>Allocation</h2>${alloc(tot)}</div>
+  ${fds.length?`<div class="card"><h2>Upcoming FD maturities</h2>${fds.slice(0,4).map(a=>`<div class="row">${esc(a.name)}<span class="v">${inr(a.maturity_value||a.current_value)}<div class="mute" style="font-size:13px">${esc(a.maturity)}</div></span></div>`).join("")}</div>`:""}
+  </aside></div>`;
+}
+function groups(){
+  const g={};
+  A.forEach(a=>{let k=VIEW==="type"?(T[a.type]||a.type):(AC[a.asset_class]||"Other");
+    if(VIEW==="inst"&&(a.type==="mutual_fund"||a.type==="etf"))k+=a.type==="etf"?" (ETF)":" (MF)";
+    g[k]=(g[k]||0)+a.current_value});
+  return Object.entries(g).filter(e=>e[1]>0).sort((a,b)=>b[1]-a[1]);
+}
+function alloc(tot){
+  tot=tot||1;const g=groups(),R=70,L=2*Math.PI*R;let off=0;
+  const col=(k,i)=>VIEW==="class"?(ACC[k]||ACC.Other):PAL[i%PAL.length];
+  const segs=g.map(([k,v],i)=>{const len=Math.max(v/tot*L-2,0);const s=`<circle cx="100" cy="100" r="${R}" fill="none" stroke="${col(k,i)}" stroke-width="26" stroke-dasharray="${len} ${L-len}" stroke-dashoffset="${-off}" transform="rotate(-90 100 100)"><title>${esc(k)}</title></circle>`;off+=v/tot*L;return s}).join("");
+  return `<div class="views">${[["class","Asset class"],["inst","Class & instrument"],["type","Product type"]].map(([v,l])=>`<button class="${VIEW===v?"on":""}" onclick="setView('${v}')">${l}</button>`).join("")}</div>
+  <div class="alloc"><svg viewBox="0 0 200 200" width="190" height="190" role="img" aria-label="Allocation donut"><circle cx="100" cy="100" r="${R}" fill="none" stroke="var(--line)" stroke-width="26"/>${segs}<text x="100" y="96" text-anchor="middle" fill="var(--mute)" font-size="11">Allocation</text><text x="100" y="116" text-anchor="middle" fill="var(--text)" font-size="14" font-weight="500">${inr(tot)}</text></svg>
+  <div style="flex:1;min-width:200px">${g.map(([k,v],i)=>`<div class="row"><span class="dot" style="background:${col(k,i)}"></span>${esc(k)}<span class="v">${inr(v)} <span class="mute">${(v/tot*100).toFixed(2)}%</span></span></div>`).join("")}</div></div>`;
+}
+const mname=s=>new Date(s.month+"-01").toLocaleString("en-IN",{month:"short",year:"2-digit"});
+const cmp=n=>n>=1e7?"₹"+(n/1e7).toFixed(2)+"Cr":n>=1e5?"₹"+(n/1e5).toFixed(1)+"L":inr(n);
+function prevLine(tot){const p=H.length>1?H[H.length-2]:null;if(!p)return"";const d=tot-p.total;return `<div class="${cls(d)}">${d>=0?"+":""}${inr(d)} (${pct(tot,p.total)}) since ${mname(p)}</div>`}
+function histCard(){
+  const h=H.slice(-12);if(!h.length)return"";
+  const max=Math.max(...h.map(s=>s.total),1),W=64,w=h.length*W+10;
+  const bars=h.map((s,i)=>{const ht=Math.max(s.total/max*100,4),x=i*W+10,last=i===h.length-1;
+    return `<g><title>${mname(s)}: ${inr(s.total)}</title><rect x="${x}" y="${130-ht}" width="44" height="${ht}" rx="8" fill="${last?"var(--acc)":"var(--mute)"}" opacity="${last?1:.35}"/><text x="${x+22}" y="${124-ht}" text-anchor="middle" font-size="11" fill="var(--text)">${cmp(s.total)}</text><text x="${x+22}" y="150" text-anchor="middle" font-size="11" fill="var(--mute)">${mname(s)}</text></g>`}).join("");
+  return `<div class="card" style="grid-column:1/-1"><h2>Net worth by month</h2><div style="overflow-x:auto"><svg viewBox="0 0 ${w} 160" width="${w}" style="max-width:100%" role="img" aria-label="Net worth at the end of each month">${bars}</svg></div>${h.length<2?`<p class="mute">History starts this month. A snapshot is saved each month you open or update the app.</p>`:""}</div>`}
+function hist(){
+  $("#hist").innerHTML=H.length?`<div class="card" style="overflow-x:auto"><h2>Month-end snapshots</h2><table><tr><th>Month<th class="n">Net worth<th class="n">Equity<th class="n">Debt<th class="n">Gold<th class="n">Cash</tr>${[...H].reverse().map(s=>`<tr><td>${mname(s)}<td class="n">${inr(s.total)}<td class="n">${inr(s.by_class.equity||0)}<td class="n">${inr(s.by_class.debt||0)}<td class="n">${inr(s.by_class.gold||0)}<td class="n">${inr(s.by_class.cash||0)}</tr>`).join("")}</table></div>`:`<div class="card"><p class="mute">No snapshots yet. One is saved each month you open or update the app.</p></div>`}
+async function quit(){
+  if(!confirm("Shut down the app? You can start it again with run.bat."))return;
+  try{sessionStorage.removeItem("show")}catch{}
+  try{await fetch("/api/shutdown",{method:"POST",headers:{"X-App":"networth"}})}catch{}
+  document.body.innerHTML='<div style="display:grid;place-items:center;min-height:100vh;text-align:center;font-family:Outfit,system-ui,sans-serif"><div><h1 style="font-weight:300">The app has stopped</h1><p>Your data is saved. You can close this tab and start the app again with run.bat.</p></div></div>';
+  window.close();
+}
+$("#out").onclick=quit;
+function go(v){document.querySelector(`#nav [data-v=${v}]`).click()}
+
+$("#flt").innerHTML='<option value="">All types</option>'+Object.entries(T).map(([k,v])=>`<option value="${k}">${v}</option>`).join("");
+$("#flt").onchange=()=>{if($("#flt").value==="fixed_deposit")SORT={k:"maturity",d:1};table()};
+$("#f_type").innerHTML=Object.entries(T).map(([k,v])=>`<option value="${k}">${v}</option>`).join("");
+$("#f_type").onchange=fields;
+setTheme(document.documentElement.dataset.theme);
+$("#f_asset_class").innerHTML='<option value="auto">Auto</option>'+Object.entries(AC).map(([k,v])=>`<option value="${k}">${v}</option>`).join("");
+const TXT=["name","type","cls"],FIRSTASC=[...TXT,"start","maturity","days"];
+const fmtD=iso=>iso?new Date(iso+"T00:00:00").toLocaleDateString("en-IN",{day:"numeric",month:"short",year:"numeric"}):"";
+const dleft=a=>a.maturity?Math.round((new Date(a.maturity+"T00:00:00")-new Date(new Date().toDateString()))/864e5):null;
+const GENERAL=[["name","Name",""],["type","Type",""],["cls","Class",""],["details","Details","",false],["invested","Invested","n"],["value","Value","n"],["gain","Gain %","n"]];
+const FDCOLS=[["name","Name",""],["rate","Rate","n"],["start","Start","n"],["maturity","Maturity","n"],["days","Days left","n"],["invested","Principal","n"],["value","Value now","n"],["mvalue","At maturity","n"]];
+const cols=()=>$("#flt").value==="fixed_deposit"?FDCOLS:GENERAL;
+const sortable=()=>{const c=cols().filter(x=>x[3]!==false);return c.some(x=>x[0]==="maturity")?c:[...c,["maturity","Maturity",""]]};
+const GET={name:a=>a.name.toLowerCase(),type:a=>T[a.type]||a.type,cls:a=>AC[a.asset_class]||"",invested:a=>a.invested||0,value:a=>a.current_value,
+  gain:a=>a.invested?(a.current_value-a.invested)/a.invested:null,rate:a=>a.rate||null,start:a=>a.start||null,maturity:a=>a.maturity||null,days:a=>dleft(a),mvalue:a=>a.maturity_value||null};
+let SORT={k:"value",d:-1};try{const s=JSON.parse(sessionStorage.getItem("sort"));if(s&&GET[s.k])SORT=s}catch{}
+function cmpRows(a,b){const x=GET[SORT.k](a),y=GET[SORT.k](b);if(x===null||y===null)return x===y?0:x===null?1:-1; // rows without this figure sort last
+  const c=typeof x==="string"?x.localeCompare(y):(x>y)-(x<y);return c*SORT.d||a.name.localeCompare(b.name)}
+function setSort(k,d){SORT={k,d};try{sessionStorage.setItem("sort",JSON.stringify(SORT))}catch{}table()}
+function sortBy(k){setSort(k,SORT.k===k?-SORT.d:FIRSTASC.includes(k)?1:-1)}
+const lab=(k,d)=>TXT.includes(k)?(d>0?"A–Z":"Z–A"):["start","maturity"].includes(k)?(d>0?"earliest first":"latest first"):(d>0?"low to high":"high to low");
+function head(){return `<tr>${cols().map(([k,l,c,s])=>s===false?`<th class="${c}">${l}</th>`:`<th class="${c}" aria-sort="${SORT.k===k?(SORT.d>0?"ascending":"descending"):"none"}"><button class="sb" onclick="sortBy('${k}')">${l}${SORT.k===k?(SORT.d>0?" ▲":" ▼"):""}</button></th>`).join("")}<th></th></tr>`}
+$("#srt").onchange=e=>{const[k,d]=e.target.value.split(":");setSort(k,+d)};
+const details=a=>a.type==="fixed_deposit"?[a.rate?a.rate+"%":"",a.maturity?(a.matured?"matured ":"matures ")+fmtD(a.maturity):""].filter(Boolean).join(" · "):a.quantity?`${a.quantity} @ ${inr(a.avg_price)}`:"";
+const acts=a=>`<td class="n"><button class="btn" onclick="edit('${a.id}')">Edit</button> <button class="btn" onclick="del('${a.id}')">Delete</button>`;
+function table(){
+  const f=$("#flt").value,fd=f==="fixed_deposit",rows=A.filter(a=>!f||a.type===f);
+  if(!sortable().some(c=>c[0]===SORT.k))SORT=fd?{k:"maturity",d:1}:{k:"value",d:-1};
+  rows.sort(cmpRows);
+  $("#srt").innerHTML=sortable().flatMap(([k,l])=>[1,-1].map(d=>`<option value="${k}:${d}">Sort: ${l} ${lab(k,d)}</option>`)).join("");$("#srt").value=SORT.k+":"+SORT.d;
+  const row=a=>fd?`<tr><td>${esc(a.name)}<td class="n">${a.rate?a.rate+"%":""}<td class="n">${fmtD(a.start)}<td class="n">${fmtD(a.maturity)}<td class="n">${a.maturity?(a.matured?'<span class="tag">Matured</span>':dleft(a)):""}<td class="n">${inr(a.invested)}<td class="n">${inr(a.current_value)}<td class="n">${a.maturity_value?inr(a.maturity_value):""}${acts(a)}</tr>`
+   :`<tr><td>${esc(a.name)}${a.matured?' <span class="tag">Matured</span>':""}<td><span class="tag">${T[a.type]||esc(a.type)}</span><td>${AC[a.asset_class]||""}<td class="mute">${details(a)}<td class="n">${a.invested?inr(a.invested):""}<td class="n">${inr(a.current_value)}<td class="n ${cls(a.current_value-a.invested)}">${a.invested?pct(a.current_value,a.invested):""}${acts(a)}</tr>`;
+  $("#tbl").innerHTML=head()+(rows.map(row).join("")||`<tr><td colspan=9 class="mute">No holdings here yet. Add one or import a file.</tr>`);
+}
+
+const FIELDS=["name","type","isin","asset_class","quantity","avg_price","price","current_value","invested","rate","maturity","start","compounding","value_mode"];
+function fields(){const ty=$("#f_type").value,m=["stock","etf","sgb","mutual_fund"].includes(ty),fd=ty==="fixed_deposit",auto=$("#f_value_mode").value==="auto";
+  document.querySelectorAll("#dlg .m").forEach(e=>e.classList.toggle("hide",!m));
+  document.querySelectorAll("#dlg .o").forEach(e=>e.classList.toggle("hide",m||(e.classList.contains("fd")&&!fd)||(e.classList.contains("cv")&&fd&&auto)))}
+$("#f_value_mode").onchange=fields;
+function edit(id){
+  editId=id||null;const a=A.find(x=>x.id===id)||{type:"stock"};
+  $("#dt").textContent=id?"Edit holding":"Add holding";
+  FIELDS.forEach(f=>$("#f_"+f).value=a[f]??"");$("#f_asset_class").value=a.class_manual?a.asset_class:"auto";if(!$("#f_compounding").value)$("#f_compounding").value="quarterly";if(!$("#f_value_mode").value)$("#f_value_mode").value="auto";fields();$("#dlg").showModal();
+}
+async function save(){
+  const a={};FIELDS.forEach(f=>a[f]=$("#f_"+f).value);
+  try{await api(editId?"/api/assets/"+editId:"/api/assets",{method:editId?"PUT":"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(a)});
+    $("#dlg").close();toast("Holding saved");refresh()}catch(e){alert(e.message)}
+}
+async function del(id){const a=A.find(x=>x.id===id);if(confirm(`Delete "${a.name}"?`)){await api("/api/assets/"+id,{method:"DELETE"});toast("Holding deleted");refresh()}}
+
+$("#file").onchange=async e=>{
+  const fd=new FormData();fd.append("file",e.target.files[0]);
+  try{const r=await api("/api/import/preview",{method:"POST",body:fd});P=r.rows;M=r.missing;W=r.warn;D=r.dupes}catch(err){$("#prev").innerHTML=`<p class="loss">${esc(err.message)}</p>`;return}
+  const n=P.filter(r=>r.status==="new").length,u=P.filter(r=>r.status==="update").length,s=P.length-n-u;
+  $("#prev").innerHTML=`<p>${P.length} holdings found: ${n} new, ${u} to update${s?`, ${s} already up to date (skipped)`:""}.${D?` ${D} duplicate row${D>1?"s":""} inside the file ignored.`:""}</p><div style="overflow-x:auto"><table><tr><th>Name<th>Type<th>Class<th class="n">Qty<th class="n">Avg price<th class="n">Price<th class="n">Value<th></tr>`+
+  P.map(r=>`<tr><td>${esc(r.name)}<td>${T[r.type]||esc(r.type)}<td class="n">${r.quantity||""}<td class="n">${r.avg_price||""}<td class="n">${r.price||""}<td class="n">${inr(r.quantity&&r.price?r.quantity*r.price:r.current_value)}<td><span class="tag ${r.status}">${{new:"New",update:"Update",same:"No change"}[r.status]}</span></tr>`).join("")+
+  `</table></div>`+(M.length?`<h2 style="margin:24px 0 6px;font-weight:500">In your tracker but missing from this file (${M.length})</h2>
+  ${W?`<p class="loss">That is a lot of holdings. Check this is the right account and a complete export before removing anything.</p>`:""}
+  <p class="mute">Tick the ones you have sold to remove them. Unticked holdings are kept. <a href="#" onclick="document.querySelectorAll('.rm').forEach(c=>c.checked=true);return false" style="color:var(--text)">Select all</a></p>
+  ${M.map(m=>`<label class="row"><input type="checkbox" class="rm" value="${m.id}" style="width:auto"> ${esc(m.name)}<span class="v">${inr(m.current_value)}</span></label>`).join("")}`:"")+
+  `<p>${n+u||M.length?`<button class="btn pri" onclick="commit()">${n+u?`Import ${n+u} holdings`:"Remove ticked holdings"}</button>`:`<span class="mute">Nothing new to import. Everything in this file is already up to date.</span>`}</p>`;
+};
+async function commit(){
+  const r=await api("/api/import/commit",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({rows:P,remove:[...document.querySelectorAll(".rm:checked")].map(c=>c.value)})});
+  $("#prev").innerHTML="";$("#file").value="";toast(`Imported: ${r.added} added, ${r.updated} updated, ${r.skipped} unchanged skipped, ${r.removed} removed`);await refresh();go("dash");
+}
+async function boot(){
+  const s=await api("/api/auth/status");
+  if(s.unlocked){$("#lock").classList.add("hide");return refresh()}
+  const ex=s.exists;$("#lock").classList.remove("hide");
+  $("#lkc").innerHTML=`<h2 style="font-size:20px;color:var(--text)">${ex?"Unlock your data":"Create a password"}</h2>
+   ${ex?"":`<p class="mute">Your data is encrypted with this password. If you forget it, the data cannot be recovered.</p>`}
+   <label class="mute" for="pw">Password</label><input id="pw" type="password" autocomplete="${ex?"current-password":"new-password"}">
+   ${ex?"":`<label class="mute" for="pw2">Confirm password</label><input id="pw2" type="password" autocomplete="new-password"><p class="mute" style="font-size:13px">At least 6 characters. A few random words is stronger than a short PIN.</p>`}
+   <p id="lkerr" class="loss" role="alert" style="min-height:1.5em;margin:4px 0"></p><button class="btn pri" id="lkgo" style="width:100%">${ex?"Unlock":"Create and encrypt"}</button>`;
+  const go=async()=>{const pw=$("#pw").value,e=$("#lkerr");e.textContent="";
+    if(!ex&&pw!==$("#pw2").value){e.textContent="The passwords do not match.";return}
+    try{await api(ex?"/api/auth/unlock":"/api/auth/setup",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({password:pw})});
+      $("#pw").value="";$("#lock").classList.add("hide");await refresh()}catch(x){e.textContent=x.message}};
+  $("#lkgo").onclick=go;document.querySelectorAll("#lkc input").forEach(i=>i.onkeydown=e=>{if(e.key==="Enter")go()});$("#pw").focus();
+}
+boot();
+</script>
+</body>
+</html>
