@@ -12,6 +12,7 @@ encrypted with a password you choose.
 - Import spreadsheets with a preview first, duplicate rejection and opt-in removal of sold holdings
   - Zerodha Console holdings (.xlsx)
   - ICICI Bank FD summary (.xlsx)
+  - HDFC Bank FD summary (.xlsx)
   - SBI Mutual Fund account summary (.ods or .xlsx)
   - Any sheet or CSV with columns such as Name, ISIN, Quantity, Average Price, Price
 - Light and dark themes, sortable holdings, and a privacy toggle that hides all amounts

@@ -159,7 +159,7 @@ def refresh_fd(a):
         return
     a["current_value"] = v
     a["matured"] = bool(a.get("maturity")) and a["maturity"] < date.today().isoformat()
-    if a.get("maturity"):
+    if a.get("maturity") and a.get("maturity_value_src") != "bank":
         a["maturity_value"] = fd_value(a, date.fromisoformat(a["maturity"]))
 
 
@@ -257,6 +257,7 @@ def update(id: str, a: dict):
     items = load()
     if a.get("asset_class") not in (None, "", "auto"):
         a["class_manual"] = True  # an explicit choice from the form
+    a["maturity_value_src"] = ""  # a hand edit means the maturity amount is calculated again
     for i, it in enumerate(items):
         if it["id"] == id:
             items[i] = {**it, **norm({**it, **a}), "id": id}
@@ -321,8 +322,45 @@ def parse_fd_summary(d):
         bal, acc = num(g("balance")), num(g("accrued interest"))
         rows.append({"name": f"ICICI FD {no}", "type": "fixed_deposit", "ref": f"ICICI-FD-{no}", "source": "excel",
                      "invested": bal, "current_value": round(bal + acc, 2), "rate": num(g("interest rate")),
-                     "maturity": md, "maturity_value": num(g("maturity amount")), "quantity": 0.0,
+                     "maturity": md, "maturity_value": num(g("maturity amount")), "maturity_value_src": "bank", "quantity": 0.0,
                      "avg_price": 0.0, "price": 0.0})
+    return rows
+
+
+def parse_hdfc_fd(d):
+    """HDFC Bank 'Fixed Deposit Summary': header row, then one FD per row (principal, rate, start and maturity dates)."""
+    d = d.dropna(how="all").reset_index(drop=True)
+    norm_h = lambda v: re.sub(r"[\s.]+$", "", str(v).strip().lower())
+    col = None
+    for i in range(len(d)):
+        cells = {j: norm_h(v) for j, v in d.iloc[i].items() if not pd.isna(v)}
+        if {"account no", "principal amount", "deposit start date"} <= set(cells.values()):
+            col = {h: j for j, h in cells.items()}
+            break
+    if col is None:
+        return []
+
+    def day(v):
+        if pd.isna(v):
+            return ""
+        t = pd.to_datetime(v, format="%d %b %Y", errors="coerce") if isinstance(v, str) else pd.to_datetime(v, errors="coerce")
+        return "" if pd.isna(t) else t.date().isoformat()
+
+    rows = []
+    for k in range(i + 1, len(d)):
+        r = d.iloc[k]
+        g = lambda h: r.iloc[col[h]] if h in col else None
+        acct = g("account no")
+        acct = str(int(acct)) if isinstance(acct, (int, float)) and not pd.isna(acct) and float(acct).is_integer() else str(acct).strip()
+        if not re.fullmatch(r"\d{6,}", acct):  # skips the ***** rows, totals and the disclaimers
+            continue
+        a = {"name": f"HDFC FD {acct}", "type": "fixed_deposit", "ref": f"HDFC-FD-{acct}", "source": "excel",
+             "invested": num(g("principal amount")), "rate": num(g("rate of interest")),
+             "start": day(g("deposit start date")), "maturity": day(g("maturity date")),
+             "maturity_value": num(g("maturity amount")), "maturity_value_src": "bank",
+             "compounding": "quarterly", "quantity": 0.0, "avg_price": 0.0, "price": 0.0}
+        a["current_value"] = fd_value(a) or a["invested"]  # grown from the start date; recalculated daily
+        rows.append(a)
     return rows
 
 
@@ -411,6 +449,11 @@ def parse(raw: bytes, filename: str):
         fd = parse_fd_summary(d)
         if fd:
             rows += fd
+            covered.add("fixed_deposit")
+            continue
+        hd = parse_hdfc_fd(d)
+        if hd:
+            rows += hd
             covered.add("fixed_deposit")
             continue
         mf = parse_mf_statement(d)
