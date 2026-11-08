@@ -26,6 +26,11 @@ button:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid 
 .thm button.on{background:#f5f3ea;color:#1d1d1b;border-color:#f5f3ea}
 .main{padding:28px 32px;min-width:0}
 .top{display:flex;justify-content:space-between;align-items:center;gap:16px;flex-wrap:wrap;margin-bottom:20px}
+.tl{display:flex;align-items:center;gap:12px}
+.menu{width:44px;height:44px;border:1px solid var(--line);background:var(--card);border-radius:12px;display:grid;place-items:center;padding:0}
+.menu svg{width:22px;height:22px}
+.shell.nomenu{grid-template-columns:minmax(0,1fr)}
+.shell.nomenu .side{display:none}
 .top h1{margin:0;font-size:22px;font-weight:500}
 .eye{height:44px;border:1px solid var(--line);background:var(--card);border-radius:999px;padding:0 18px;display:flex;align-items:center;gap:8px;font-size:14px}
 .eye svg{width:20px;height:20px}
@@ -82,7 +87,7 @@ dialog::backdrop{background:#0008}
 <aside class="side"><div class="logo"><i></i>Net worth</div><nav id="nav" aria-label="Main"><button data-v="dash" class=on><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><rect x="3" y="3" width="7" height="9" rx="2"/><rect x="14" y="3" width="7" height="5" rx="2"/><rect x="14" y="12" width="7" height="9" rx="2"/><rect x="3" y="16" width="7" height="5" rx="2"/></svg>Dashboard</button><button data-v="hold"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h10"/></svg>Holdings</button><button data-v="ana"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M4 20V10M10 20V4M16 20v-8M22 20H2"/></svg>Analytics</button><button data-v="hist"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>History</button><button data-v="imp"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M12 3v12M7 10l5 5 5-5M4 20h16"/></svg>Import</button><button data-v="set"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/></svg>Settings</button></nav>
 <div class="thm"><button id="th-light">Light</button><button id="th-dark">Dark</button></div>
 <button class="out" id="out"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M12 3v9M6.4 6.6a8 8 0 1 0 11.2 0"/></svg>Log out</button></aside>
-<div class="main"><div class="top"><h1 id="ttl">Dashboard</h1><button class="eye" id="eye" aria-pressed="false"></button></div>
+<div class="main"><div class="top"><div class="tl"><button class="menu" id="menu" aria-controls="nav" aria-expanded="true" aria-label="Hide menu"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"/></svg></button><h1 id="ttl">Dashboard</h1></div><button class="eye" id="eye" aria-pressed="false"></button></div>
   <section id="dash"></section>
   <section id="hold" class="hide">
     <div class="tools"><select id="flt" aria-label="Filter by type"></select><select id="srt" aria-label="Sort holdings"></select><span class="sp"></span><button class="btn pri" onclick="edit()">Add holding</button></div>
@@ -133,7 +138,7 @@ dialog::backdrop{background:#0008}
 let SHOW=false;try{SHOW=sessionStorage.getItem("show")==="1"}catch{}
 const T={stock:"Stocks",etf:"ETFs",sgb:"Gold bonds",mutual_fund:"Mutual funds",fixed_deposit:"Fixed deposits",savings:"Savings",other:"Other"};
 const C={stock:"#c8f551",etf:"#38bdf8",sgb:"#f472b6",mutual_fund:"#5eead4",fixed_deposit:"#fbbf24",savings:"#a78bfa",other:"#94a3b8"};
-const $=s=>document.querySelector(s), inr=n=>SHOW?(n<0?"−":"")+"₹"+Math.round(Math.abs(n)).toLocaleString("en-IN"):"₹ ••••";
+const $=s=>document.querySelector(s), rupee=n=>(n<0?"−":"")+"₹"+Math.round(Math.abs(n)).toLocaleString("en-IN"), inr=n=>SHOW?rupee(n):"₹ ••••";
 const esc=s=>String(s??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
 const cls=n=>n>=0?"gain":"loss", pct=(a,b)=>b?((a-b)/b*100).toFixed(1)+"%":"";
 const AC={equity:"Equity",debt:"Debt",gold:"Gold",cash:"Cash",other:"Other"};
@@ -166,6 +171,10 @@ const EYEOFF='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-
 function eye(){const b=$("#eye");b.setAttribute("aria-pressed",SHOW);b.innerHTML=(SHOW?EYE:EYEOFF)+`<span>${SHOW?"Hide amounts":"Show amounts"}</span>`}
 $("#eye").onclick=()=>{SHOW=!SHOW;try{sessionStorage.setItem("show",SHOW?"1":"0")}catch{}eye();dash();table();hist()};
 eye();
+let NOMENU=false;try{NOMENU=localStorage.getItem("menu")==="0"}catch{}
+function menu(){document.querySelector(".shell").classList.toggle("nomenu",NOMENU);const b=$("#menu");b.setAttribute("aria-expanded",!NOMENU);b.setAttribute("aria-label",NOMENU?"Show menu":"Hide menu")}
+$("#menu").onclick=()=>{NOMENU=!NOMENU;try{localStorage.setItem("menu",NOMENU?"0":"1")}catch{}menu()};
+menu();
 async function refresh(){A=await api("/api/assets");H=await api("/api/history");dash();table();hist()}
 function dash(){
   const tot=A.reduce((s,a)=>s+a.current_value,0), inv=A.filter(a=>a.invested);
@@ -204,7 +213,7 @@ function alloc(tot){
   <div style="flex:1;min-width:200px">${g.map(([k,v],i)=>`<div class="row"><span class="dot" style="background:${col(k,i)}"></span>${esc(k)}<span class="v">${inr(v)} <span class="mute">${(v/tot*100).toFixed(2)}%</span></span></div>`).join("")}</div></div>`;
 }
 const mname=s=>new Date(s.month+"-01").toLocaleString("en-IN",{month:"short",year:"2-digit"});
-const cmp=n=>n>=1e7?"₹"+(n/1e7).toFixed(2)+"Cr":n>=1e5?"₹"+(n/1e5).toFixed(1)+"L":inr(n);
+const cmp=n=>!SHOW?"₹ ••••":n>=1e7?"₹"+(n/1e7).toFixed(2)+"Cr":n>=1e5?"₹"+(n/1e5).toFixed(1)+"L":rupee(n);
 function prevLine(tot){const p=H.length>1?H[H.length-2]:null;if(!p)return"";const d=tot-p.total;return `<div class="${cls(d)}">${d>=0?"+":""}${inr(d)} (${pct(tot,p.total)}) since ${mname(p)}</div>`}
 function histCard(){
   const h=H.slice(-12);if(!h.length)return"";
@@ -282,11 +291,11 @@ $("#file").onchange=async e=>{
   try{const r=await api("/api/import/preview",{method:"POST",body:fd});P=r.rows;M=r.missing;W=r.warn;D=r.dupes}catch(err){$("#prev").innerHTML=`<p class="loss">${esc(err.message)}</p>`;return}
   const n=P.filter(r=>r.status==="new").length,u=P.filter(r=>r.status==="update").length,s=P.length-n-u;
   $("#prev").innerHTML=`<p>${P.length} holdings found: ${n} new, ${u} to update${s?`, ${s} already up to date (skipped)`:""}.${D?` ${D} duplicate row${D>1?"s":""} inside the file ignored.`:""}</p><div style="overflow-x:auto"><table><tr><th>Name<th>Type<th>Class<th class="n">Qty<th class="n">Avg price<th class="n">Price<th class="n">Value<th></tr>`+
-  P.map((r,i)=>`<tr><td>${esc(r.name)}${simRow(r,i)}<td>${T[r.type]||esc(r.type)}<td class="n">${r.quantity||""}<td class="n">${r.avg_price||""}<td class="n">${r.price||""}<td class="n">${inr(r.quantity&&r.price?r.quantity*r.price:r.current_value)}<td><span class="tag ${r.status}">${{new:"New",update:"Update",same:"No change"}[r.status]}</span></tr>`).join("")+
+  P.map((r,i)=>`<tr><td>${esc(r.name)}${simRow(r,i)}<td>${T[r.type]||esc(r.type)}<td class="n">${r.quantity||""}<td class="n">${r.avg_price||""}<td class="n">${r.price||""}<td class="n">${rupee(r.quantity&&r.price?r.quantity*r.price:r.current_value)}<td><span class="tag ${r.status}">${{new:"New",update:"Update",same:"No change"}[r.status]}</span></tr>`).join("")+
   `</table></div>`+(M.length?`<h2 style="margin:24px 0 6px;font-weight:500">In your tracker but missing from this file (${M.length})</h2>
   ${W?`<p class="loss">That is a lot of holdings. Check this is the right account and a complete export before removing anything.</p>`:""}
   <p class="mute">Tick the ones you have sold to remove them. Unticked holdings are kept. <a href="#" onclick="document.querySelectorAll('.rm').forEach(c=>c.checked=true);return false" style="color:var(--text)">Select all</a></p>
-  ${M.map(m=>`<label class="row"><input type="checkbox" class="rm" value="${m.id}" style="width:auto"> ${esc(m.name)}<span class="v">${inr(m.current_value)}</span></label>`).join("")}`:"")+
+  ${M.map(m=>`<label class="row"><input type="checkbox" class="rm" value="${m.id}" style="width:auto"> ${esc(m.name)}<span class="v">${rupee(m.current_value)}</span></label>`).join("")}`:"")+
   `${P.some(r=>r.similar)?`<p class="loss">Some funds look the same as ones already in your holdings, for example from Zerodha. This file has no ISIN to match on, so importing both would count them twice. Tick Skip on any that are duplicates.</p>`:""}<p>${n+u||M.length?`<button class="btn pri" onclick="commit()">${n+u?`Import ${n+u} holdings`:"Remove ticked holdings"}</button>`:`<span class="mute">Nothing new to import. Everything in this file is already up to date.</span>`}</p>`;
 };
 async function commit(){
