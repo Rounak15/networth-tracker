@@ -103,6 +103,7 @@ def auth_unlock(body: dict):
     return {"ok": True}
 
 
+HYBRID_WORDS = ("ARBITRAGE", "HYBRID", "BALANCED", "MULTI ASSET", "ASSET ALLOCATION", "EQUITY SAVINGS", "DYNAMIC ASSET")
 DEBT_WORDS = ("LIQUID", "OVERNIGHT", "GILT", "BOND", "MONEY MARKET", "CORPORATE", "TREASURY", "DEBT")
 
 
@@ -123,7 +124,7 @@ def classify(a):
         return "gold"
     if ins.startswith("DEBT") or any(w in n for w in DEBT_WORDS):
         return "debt"
-    if ins.startswith("HYBRID"):
+    if ins.startswith("HYBRID") or (not ins.startswith("EQUITY") and any(w in n for w in HYBRID_WORDS)):
         return "other"
     if t in ("etf", "mutual_fund"):
         return "equity"
@@ -327,6 +328,52 @@ def parse_fd_summary(d):
     return rows
 
 
+def parse_soa_mf(d):
+    """Mutual fund 'SOA summary': Scheme Name, Invested Value, Market Value, Gain/Loss, Balance Units, Nav Date."""
+    d = d.dropna(how="all").reset_index(drop=True)
+    hdr = lambda v: str(v).strip().lower()
+    col = None
+    for i in range(len(d)):
+        cells = {j: hdr(v) for j, v in d.iloc[i].items() if not pd.isna(v)}
+        pick = lambda p: next((j for j, h in cells.items() if h.startswith(p)), None)
+        if "scheme name" in cells.values() and pick("invested value") is not None and pick("balance units") is not None:
+            col = {"name": pick("scheme name"), "inv": pick("invested value"), "mkt": pick("market value"),
+                   "units": pick("balance units"), "nav": pick("nav date"), "folio": pick("folio")}
+            break
+    if col is None:
+        return []
+    agg = {}  # the same scheme in two folios is one holding for net worth purposes
+    for k in range(i + 1, len(d)):
+        r = d.iloc[k]
+        name = re.sub(r"\s+", " ", "" if pd.isna(r.iloc[col["name"]]) else str(r.iloc[col["name"]]).strip())
+        if not name or name.lower().startswith("total"):
+            continue
+        units, inv = num(r.iloc[col["units"]]), num(r.iloc[col["inv"]])
+        mkt = num(r.iloc[col["mkt"]]) if col["mkt"] is not None else 0.0
+        if not units and not mkt:
+            continue
+        t = pd.to_datetime(r.iloc[col["nav"]], errors="coerce", dayfirst=True) if col["nav"] is not None else pd.NaT
+        folio = ""
+        if col["folio"] is not None and not pd.isna(r.iloc[col["folio"]]):
+            f = r.iloc[col["folio"]]
+            folio = str(int(f)) if isinstance(f, (int, float)) and float(f).is_integer() else str(f).strip()
+        a = agg.setdefault((folio, name.lower()), {"name": name, "folio": folio, "units": 0.0, "inv": 0.0, "mkt": 0.0, "nav": ""})
+        a["units"] += units
+        a["inv"] += inv
+        a["mkt"] += mkt
+        a["nav"] = max(a["nav"], "" if pd.isna(t) else t.date().isoformat())
+    rows = []
+    for a in agg.values():
+        u = a["units"]
+        slug = re.sub(r"[^a-z0-9]+", "-", (a["folio"] + " " + a["name"]).lower()).strip("-")
+        rows.append({"name": "SOA · " + a["name"], "type": "mutual_fund", "isin": a["folio"], "folio": a["folio"],
+                     "ref": "SOA-MF-" + slug, "source": "excel",
+                     "quantity": round(u, 4), "price": a["mkt"] / u if u else 0.0,
+                     "avg_price": a["inv"] / u if u and a["inv"] else 0.0, "invested": a["inv"],
+                     "current_value": round(a["mkt"], 2), "nav_date": a["nav"]})
+    return rows
+
+
 def parse_hdfc_fd(d):
     """HDFC Bank 'Fixed Deposit Summary': header row, then one FD per row (principal, rate, start and maturity dates)."""
     d = d.dropna(how="all").reset_index(drop=True)
@@ -451,6 +498,11 @@ def parse(raw: bytes, filename: str):
             rows += fd
             covered.add("fixed_deposit")
             continue
+        so = parse_soa_mf(d)
+        if so:
+            rows += so
+            covered.add("mutual_fund")
+            continue
         hd = parse_hdfc_fd(d)
         if hd:
             rows += hd
@@ -507,13 +559,13 @@ def parse(raw: bytes, filename: str):
     return rows, covered
 
 
-CMP = ("quantity", "avg_price", "price", "current_value", "invested", "rate", "maturity", "maturity_value")
+CMP = ("name", "quantity", "avg_price", "price", "current_value", "invested", "rate", "maturity", "maturity_value")
 
 
 def unchanged(new, old):
     for f in CMP:
         x, y = new.get(f), old.get(f)
-        if f in ("maturity",):
+        if f in ("maturity", "name"):
             if (x or "") != (y or ""):
                 return False
         elif round(float(x or 0), 2) != round(float(y or 0), 2):
@@ -538,6 +590,17 @@ async def preview(file: UploadFile = File(...)):
     for r in rows:
         old = existing.get(key(r))
         r["status"] = "new" if old is None else "same" if unchanged(norm(dict(r)), old) else "update"
+    noise = {"direct", "plan", "growth", "option", "fund", "regular", "soa"}
+    toks = lambda n: set(re.findall(r"[a-z0-9]+", n.lower())) - noise
+    held = [i for i in items if i["type"] == "mutual_fund"]
+    for r in rows:  # rows without an ISIN can only be matched by name, so warn about funds that look the same
+        if r["type"] == "mutual_fund" and (not r.get("isin") or str(r.get("ref", "")).startswith("SOA-")) and r["status"] == "new":
+            a = toks(r["name"])
+            for i in held:
+                b = toks(i["name"])
+                if key(i) != key(r) and a and b and len(a & b) / len(a | b) >= 0.8:
+                    r["similar"] = i["name"]
+                    break
     seen = set(uniq)
     # holdings from earlier imports of this kind of file that are not in it any more
     refp = tuple({"-".join(r["ref"].split("-")[:2]) + "-" for r in rows if r.get("ref")})
@@ -566,6 +629,9 @@ def commit(body: dict):
         k = key(r)
         if k in by_key:  # update in place, keep id and manual fields
             n = by_key[k]
+            for f in ("isin", "folio"):
+                if not r.get(f):
+                    r.pop(f, None)  # the sheet has none: keep what is stored
             if items[n].get("class_manual"):
                 r["asset_class"], r["class_manual"] = items[n]["asset_class"], True
             items[n] = {**items[n], **r, "id": items[n]["id"]}

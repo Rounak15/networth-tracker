@@ -92,6 +92,7 @@ dialog::backdrop{background:#0008}
     <div class="card" style="margin-bottom:14px"><h2>What you can import</h2>
       <div class="row" style="align-items:flex-start"><span class="tag new">Built in</span><div><b>Zerodha Console holdings</b> (.xlsx)<div class="mute">The Equity and Mutual Funds sheets. Stocks, ETFs, gold bonds and funds are recognised automatically. The Combined sheet is skipped so nothing is counted twice.</div></div></div>
       <div class="row" style="align-items:flex-start"><span class="tag new">Built in</span><div><b>ICICI Bank FD summary</b> (.xlsx)<div class="mute">Each deposit with its balance, accrued interest, rate and maturity date.</div></div></div>
+      <div class="row" style="align-items:flex-start"><span class="tag new">Built in</span><div><b>Mutual fund SOA summary</b> (.xlsx)<div class="mute">Scheme name, invested value, market value, balance units and NAV date. Names get an “SOA ·” prefix, so these stay separate holdings even when you hold the same fund elsewhere. Funds are matched by name; if the sheet has a Folio column it is used as well and kept in the ISIN field.</div></div></div>
       <div class="row" style="align-items:flex-start"><span class="tag new">Built in</span><div><b>HDFC Bank FD summary</b> (.xlsx)<div class="mute">Each deposit with its principal, rate, start and maturity dates. Interest is then calculated for you every day.</div></div></div>
       <div class="row" style="align-items:flex-start"><span class="tag new">Built in</span><div><b>SBI Mutual Fund account summary</b> (.ods or .xlsx)<div class="mute">The statement of account: units, NAV and cost of investment for each scheme, matched by folio and ISIN.</div></div></div>
       <div class="row" style="align-items:flex-start"><span class="tag">Any sheet</span><div><b>Other spreadsheets</b> (.xlsx, .xls, .ods or .csv)<div class="mute">Needs a header row with columns such as Name (or Symbol), ISIN, Quantity, Average Price, Price (or NAV), Current Value, Invested and Type. Type can be stock, ETF, mutual fund, fixed deposit or savings. Title lines above the header are fine. Without a Type column, ISINs starting INE are treated as stocks and INF as mutual funds.</div></div></div>
@@ -111,7 +112,7 @@ dialog::backdrop{background:#0008}
   <div class="f">
     <div class="w"><label>Name</label><input id="f_name"></div>
     <div><label>Type</label><select id="f_type"></select></div>
-    <div><label>ISIN (optional)</label><input id="f_isin"></div>
+    <div><label>ISIN or folio number (optional)</label><input id="f_isin"></div>
     <div class="w"><label>Asset class</label><select id="f_asset_class"></select></div>
     <div class="m"><label>Quantity</label><input id="f_quantity" type="number" step="any"></div>
     <div class="m"><label>Average price</label><input id="f_avg_price" type="number" step="any"></div>
@@ -221,6 +222,7 @@ async function quit(){
   window.close();
 }
 $("#out").onclick=quit;
+const simRow=(r,i)=>r.similar?`<div class="loss" style="font-size:12px;white-space:normal">Looks like "${esc(r.similar)}", which you already hold. <label style="white-space:nowrap"><input type="checkbox" class="skp" data-i="${i}" style="width:auto"> Skip this one</label></div>`:"";
 function go(v){document.querySelector(`#nav [data-v=${v}]`).click()}
 
 $("#flt").innerHTML='<option value="">All types</option>'+Object.entries(T).map(([k,v])=>`<option value="${k}">${v}</option>`).join("");
@@ -280,15 +282,15 @@ $("#file").onchange=async e=>{
   try{const r=await api("/api/import/preview",{method:"POST",body:fd});P=r.rows;M=r.missing;W=r.warn;D=r.dupes}catch(err){$("#prev").innerHTML=`<p class="loss">${esc(err.message)}</p>`;return}
   const n=P.filter(r=>r.status==="new").length,u=P.filter(r=>r.status==="update").length,s=P.length-n-u;
   $("#prev").innerHTML=`<p>${P.length} holdings found: ${n} new, ${u} to update${s?`, ${s} already up to date (skipped)`:""}.${D?` ${D} duplicate row${D>1?"s":""} inside the file ignored.`:""}</p><div style="overflow-x:auto"><table><tr><th>Name<th>Type<th>Class<th class="n">Qty<th class="n">Avg price<th class="n">Price<th class="n">Value<th></tr>`+
-  P.map(r=>`<tr><td>${esc(r.name)}<td>${T[r.type]||esc(r.type)}<td class="n">${r.quantity||""}<td class="n">${r.avg_price||""}<td class="n">${r.price||""}<td class="n">${inr(r.quantity&&r.price?r.quantity*r.price:r.current_value)}<td><span class="tag ${r.status}">${{new:"New",update:"Update",same:"No change"}[r.status]}</span></tr>`).join("")+
+  P.map((r,i)=>`<tr><td>${esc(r.name)}${simRow(r,i)}<td>${T[r.type]||esc(r.type)}<td class="n">${r.quantity||""}<td class="n">${r.avg_price||""}<td class="n">${r.price||""}<td class="n">${inr(r.quantity&&r.price?r.quantity*r.price:r.current_value)}<td><span class="tag ${r.status}">${{new:"New",update:"Update",same:"No change"}[r.status]}</span></tr>`).join("")+
   `</table></div>`+(M.length?`<h2 style="margin:24px 0 6px;font-weight:500">In your tracker but missing from this file (${M.length})</h2>
   ${W?`<p class="loss">That is a lot of holdings. Check this is the right account and a complete export before removing anything.</p>`:""}
   <p class="mute">Tick the ones you have sold to remove them. Unticked holdings are kept. <a href="#" onclick="document.querySelectorAll('.rm').forEach(c=>c.checked=true);return false" style="color:var(--text)">Select all</a></p>
   ${M.map(m=>`<label class="row"><input type="checkbox" class="rm" value="${m.id}" style="width:auto"> ${esc(m.name)}<span class="v">${inr(m.current_value)}</span></label>`).join("")}`:"")+
-  `<p>${n+u||M.length?`<button class="btn pri" onclick="commit()">${n+u?`Import ${n+u} holdings`:"Remove ticked holdings"}</button>`:`<span class="mute">Nothing new to import. Everything in this file is already up to date.</span>`}</p>`;
+  `${P.some(r=>r.similar)?`<p class="loss">Some funds look the same as ones already in your holdings, for example from Zerodha. This file has no ISIN to match on, so importing both would count them twice. Tick Skip on any that are duplicates.</p>`:""}<p>${n+u||M.length?`<button class="btn pri" onclick="commit()">${n+u?`Import ${n+u} holdings`:"Remove ticked holdings"}</button>`:`<span class="mute">Nothing new to import. Everything in this file is already up to date.</span>`}</p>`;
 };
 async function commit(){
-  const r=await api("/api/import/commit",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({rows:P,remove:[...document.querySelectorAll(".rm:checked")].map(c=>c.value)})});
+  const r=await api("/api/import/commit",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({rows:P.filter((r,i)=>!document.querySelector('.skp[data-i="'+i+'"]:checked')),remove:[...document.querySelectorAll(".rm:checked")].map(c=>c.value)})});
   $("#prev").innerHTML="";$("#file").value="";toast(`Imported: ${r.added} added, ${r.updated} updated, ${r.skipped} unchanged skipped, ${r.removed} removed`);await refresh();go("dash");
 }
 async function boot(){
