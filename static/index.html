@@ -15,8 +15,12 @@ button{font:inherit;cursor:pointer;color:var(--text)}
 button:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid var(--acc);outline-offset:2px}
 .shell{display:grid;grid-template-columns:232px minmax(0,1fr);min-height:100vh}
 .side{background:var(--side);padding:28px 0;display:flex;flex-direction:column;position:sticky;top:0;height:100vh}
-.logo{padding:0 24px 28px;color:#fff;font-size:20px;font-weight:600;display:flex;align-items:center;gap:10px}
-.logo i{width:26px;height:26px;border-radius:8px;background:#50a67e;display:block}
+.side-top{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:0 16px 24px 24px}
+.logo{color:#fff;font-size:20px;font-weight:600;display:flex;align-items:center;gap:10px;min-width:0}
+.logo svg{width:30px;height:30px;flex:none}
+.menu{width:36px;height:36px;border:0;background:#ffffff14;color:#d6d4cb;border-radius:10px;display:grid;place-items:center;padding:0;flex:none}
+.menu:hover{color:#fff}
+.menu svg{width:20px;height:20px}
 #nav button{display:flex;align-items:center;gap:14px;width:100%;padding:11px 24px;background:none;border:0;border-left:3px solid transparent;color:#d6d4cb;text-align:left}
 #nav button:hover{color:#fff}
 #nav button.on{color:#fff;border-left-color:#e3ae33;background:#ffffff14}
@@ -26,11 +30,10 @@ button:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid 
 .thm button.on{background:#f5f3ea;color:#1d1d1b;border-color:#f5f3ea}
 .main{padding:28px 32px;min-width:0}
 .top{display:flex;justify-content:space-between;align-items:center;gap:16px;flex-wrap:wrap;margin-bottom:20px}
-.tl{display:flex;align-items:center;gap:12px}
-.menu{width:44px;height:44px;border:1px solid var(--line);background:var(--card);border-radius:12px;display:grid;place-items:center;padding:0}
-.menu svg{width:22px;height:22px}
-.shell.nomenu{grid-template-columns:minmax(0,1fr)}
-.shell.nomenu .side{display:none}
+.shell.nomenu{grid-template-columns:72px minmax(0,1fr)}
+.nomenu .side-top{flex-direction:column-reverse;gap:14px;padding:0 0 22px}
+.nomenu .logo span,.nomenu #nav button span,.nomenu .out span,.nomenu .thm{display:none}
+.nomenu #nav button,.nomenu .out{justify-content:center;padding:12px 0}
 .top h1{margin:0;font-size:22px;font-weight:500}
 .eye{height:44px;border:1px solid var(--line);background:var(--card);border-radius:999px;padding:0 18px;display:flex;align-items:center;gap:8px;font-size:14px}
 .eye svg{width:20px;height:20px}
@@ -78,16 +81,16 @@ dialog::backdrop{background:#0008}
 .hide{display:none}
 .toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:var(--acc);color:var(--onacc);padding:10px 20px;border-radius:999px}
 @media(max-width:1000px){.dgrid{grid-template-columns:1fr}}
-@media(max-width:860px){.out{margin:0;padding:8px 14px}.shell{grid-template-columns:1fr}.side{position:static;height:auto;flex-direction:row;align-items:center;overflow-x:auto;padding:10px}.logo{display:none}#nav{display:flex}#nav button{width:auto;border-left:0;border-radius:999px;padding:8px 14px;white-space:nowrap}.thm{margin:0 0 0 auto;padding:0}.main{padding:18px}.big{font-size:40px}}
+@media(max-width:860px){.shell.nomenu{grid-template-columns:1fr}.side-top{padding:0 8px 0 0}.nomenu .side-top{flex-direction:row;padding:0 8px 0 0}.nomenu #nav button,.nomenu .out{padding:8px 14px}.out{margin:0;padding:8px 14px}.shell{grid-template-columns:1fr}.side{position:static;height:auto;flex-direction:row;align-items:center;overflow-x:auto;padding:10px}.logo{display:none}#nav{display:flex}#nav button{width:auto;border-left:0;border-radius:999px;padding:8px 14px;white-space:nowrap}.thm{margin:0 0 0 auto;padding:0}.main{padding:18px}.big{font-size:40px}}
 </style>
 </head>
 <body>
 <div id="lock"><div class="card" id="lkc"></div></div>
 <div class="shell">
-<aside class="side"><div class="logo"><i></i>Net worth</div><nav id="nav" aria-label="Main"><button data-v="dash" class=on><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><rect x="3" y="3" width="7" height="9" rx="2"/><rect x="14" y="3" width="7" height="5" rx="2"/><rect x="14" y="12" width="7" height="9" rx="2"/><rect x="3" y="16" width="7" height="5" rx="2"/></svg>Dashboard</button><button data-v="hold"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h10"/></svg>Holdings</button><button data-v="ana"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M4 20V10M10 20V4M16 20v-8M22 20H2"/></svg>Analytics</button><button data-v="hist"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>History</button><button data-v="imp"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M12 3v12M7 10l5 5 5-5M4 20h16"/></svg>Import</button><button data-v="set"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/></svg>Settings</button></nav>
+<aside class="side"><div class="side-top"><div class="logo"><svg viewBox="0 0 64 64" aria-hidden="true"><rect width="64" height="64" rx="16" fill="#50a67e"/><rect x="13" y="36" width="9" height="15" rx="3" fill="#fff"/><rect x="27.5" y="26" width="9" height="25" rx="3" fill="#fff"/><rect x="42" y="14" width="9" height="37" rx="3" fill="#e3ae33"/></svg><span>Net worth</span></div><button class="menu" id="menu" aria-controls="nav" aria-expanded="true" aria-label="Collapse menu" title="Collapse menu"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"/></svg></button></div><nav id="nav" aria-label="Main"><button data-v="dash" class=on title="Dashboard" aria-label="Dashboard"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><rect x="3" y="3" width="7" height="9" rx="2"/><rect x="14" y="3" width="7" height="5" rx="2"/><rect x="14" y="12" width="7" height="9" rx="2"/><rect x="3" y="16" width="7" height="5" rx="2"/></svg><span>Dashboard</span></button><button data-v="hold" title="Holdings" aria-label="Holdings"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h10"/></svg><span>Holdings</span></button><button data-v="ana" title="Analytics" aria-label="Analytics"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M4 20V10M10 20V4M16 20v-8M22 20H2"/></svg><span>Analytics</span></button><button data-v="hist" title="History" aria-label="History"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg><span>History</span></button><button data-v="imp" title="Import" aria-label="Import"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M12 3v12M7 10l5 5 5-5M4 20h16"/></svg><span>Import</span></button><button data-v="set" title="Settings" aria-label="Settings"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/></svg><span>Settings</span></button></nav>
 <div class="thm"><button id="th-light">Light</button><button id="th-dark">Dark</button></div>
-<button class="out" id="out"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M12 3v9M6.4 6.6a8 8 0 1 0 11.2 0"/></svg>Log out</button></aside>
-<div class="main"><div class="top"><div class="tl"><button class="menu" id="menu" aria-controls="nav" aria-expanded="true" aria-label="Hide menu"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"/></svg></button><h1 id="ttl">Dashboard</h1></div><button class="eye" id="eye" aria-pressed="false"></button></div>
+<button class="out" id="out" title="Log out" aria-label="Log out"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M12 3v9M6.4 6.6a8 8 0 1 0 11.2 0"/></svg><span>Log out</span></button></aside>
+<div class="main"><div class="top"><h1 id="ttl">Dashboard</h1><button class="eye" id="eye" aria-pressed="false"></button></div>
   <section id="dash"></section>
   <section id="hold" class="hide">
     <div class="tools"><select id="flt" aria-label="Filter by type"></select><select id="srt" aria-label="Sort holdings"></select><span class="sp"></span><button class="btn pri" onclick="edit()">Add holding</button></div>
@@ -172,7 +175,7 @@ function eye(){const b=$("#eye");b.setAttribute("aria-pressed",SHOW);b.innerHTML
 $("#eye").onclick=()=>{SHOW=!SHOW;try{sessionStorage.setItem("show",SHOW?"1":"0")}catch{}eye();dash();table();hist()};
 eye();
 let NOMENU=false;try{NOMENU=localStorage.getItem("menu")==="0"}catch{}
-function menu(){document.querySelector(".shell").classList.toggle("nomenu",NOMENU);const b=$("#menu");b.setAttribute("aria-expanded",!NOMENU);b.setAttribute("aria-label",NOMENU?"Show menu":"Hide menu")}
+function menu(){document.querySelector(".shell").classList.toggle("nomenu",NOMENU);const b=$("#menu");b.setAttribute("aria-expanded",!NOMENU);b.setAttribute("aria-label",NOMENU?"Expand menu":"Collapse menu");b.title=NOMENU?"Expand menu":"Collapse menu"}
 $("#menu").onclick=()=>{NOMENU=!NOMENU;try{localStorage.setItem("menu",NOMENU?"0":"1")}catch{}menu()};
 menu();
 async function refresh(){A=await api("/api/assets");H=await api("/api/history");dash();table();hist()}
